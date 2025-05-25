@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+:root {
+	--bg-color: #121212;
+	--text-color: #eee;
+	--link-color: #9b59b6;
+	--header-bg: #1a1a1a;
+
+	--post-bg: #111;
+	--post-border: #9b59b6;
+	--post-shadow: #9b59b644aa;
+
+	--post-title: #33ffff;
+	--post-text: #99ffffcc;
+
+	--contacts-color: #9b59b6;
+	--contacts-hover: #33ffff;
+
+	--footer-color: #99999999;
+}
+
+body {
+	background-color: var(--bg-color);
+	color: var(--text-color);
+	transition: background-color 0.3s ease, color 0.3s ease;
+	font-family: 'Share Tech Mono', monospace;
+	line-height: 1.5;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	background: var(--bg-color);
+	color: var(--text-color);
+}
+
+/* Links */
+a {
+	color: var(--link-color);
+}
+
+/* Header background */
+header {
+	background-color: var(--header-bg);
+	padding: 1rem;
+	margin-top: 60px;
+	text-align: center;
+}
+
+header img {
+	width: 160px;
+	height: 160px;
+	border-radius: 50%;
+	border: 2px solid var(--link-color);
+	filter: drop-shadow(0 0 6px var(--link-color));
+	animation: glitch 1.5s infinite;
+}
+
+@keyframes glitch {
+	0% {
+		filter: drop-shadow(0 0 6px var(--link-color));
+		transform: translate(0);
+	}
+
+	20% {
+		filter: drop-shadow(0 0 10px var(--link-color));
+		transform: translate(-2px, 2px);
+	}
+
+	40% {
+		filter: drop-shadow(0 0 10px var(--link-color));
+		transform: translate(2px, -2px);
+	}
+
+	60% {
+		filter: drop-shadow(0 0 6px var(--link-color));
+		transform: translate(0);
+	}
+
+	80% {
+		filter: drop-shadow(0 0 12px var(--link-color));
+		transform: translate(-1px, 1px);
+	}
+
+	100% {
+		filter: drop-shadow(0 0 6px var(--link-color));
+		transform: translate(0);
+	}
+}
+
+header h1 {
+	font-size: 2.8rem;
+	margin-top: 20px;
+	text-shadow:
+		0 0 8px var(--link-color),
+		0 0 20px var(--link-color);
+}
+
+header p {
+	margin-top: 10px;
+	font-size: 1.1rem;
+	max-width: 400px;
+	margin-left: auto;
+	margin-right: auto;
+	color: #33ffffcc;
+}
+
+.contacts {
+	margin-top: 25px;
+	display: flex;
+	gap: 25px;
+	justify-content: center;
+}
+
+.contacts a {
+	color: var(--contacts-color);
+	font-size: 1.6rem;
+	text-decoration: none;
+	transition: color 0.3s ease;
+}
+
+.contacts a:hover {
+	color: var(--contacts-hover);
+	transform: scale(1.2);
+}
+
+.contacts a svg {
+	vertical-align: middle;
+	filter: drop-shadow(0 0 3px var(--contacts-color));
+}
+
+main {
+	margin-top: 80px;
+	max-width: 900px;
+	width: 90%;
+}
+
+main h2 {
+	color: var(--link-color);
+	font-size: 2rem;
+	border-bottom: 2px solid var(--link-color);
+	padding-bottom: 6px;
+	margin-bottom: 30px;
+	text-shadow: 0 0 10px var(--link-color);
+}
+
+.blog-posts {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 25px;
+}
+
+.blog-post {
+	background: var(--post-bg);
+	padding: 20px;
+	border: 1px solid var(--post-border);
+	border-radius: 6px;
+	box-shadow: 0 0 10px var(--post-shadow) inset;
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.blog-post:hover {
+	transform: translateY(-6px);
+	box-shadow: 0 0 20px var(--link-color), 0 0 30px var(--link-color + "cc");
+}
+
+.blog-post h3 {
+	margin-bottom: 12px;
+	color: var(--post-title);
+}
+
+.blog-post p {
+	font-size: 0.95rem;
+	color: var(--post-text);
+	height: 60px;
+	overflow: hidden;
+}
+
+.blog-post a.read-more {
+	display: inline-block;
+	margin-top: 15px;
+	color: var(--link-color);
+	text-decoration: none;
+	font-weight: bold;
+	letter-spacing: 1.2px;
+}
+
+.blog-post a.read-more:hover {
+	text-decoration: underline;
+}
+
+footer {
+	margin: 80px 0 40px;
+	text-align: center;
+	font-size: 0.8rem;
+	color: var(--footer-color);
+}
+
+/* Light mode overrides */
+body.light-mode {
+	--bg-color: #f5f5f7;
+	--text-color: #222222;
+	--link-color: #4b3b6b;
+	/* muted deep purple */
+	--header-bg: #eaeaea;
+
+	--post-bg: #fff;
+	--post-border: #ccc;
+	--post-shadow: #ddd;
+
+	--post-title: #3a3a3a;
+	/* dark gray for post titles */
+	--post-text: #555555cc;
+	/* medium gray for text */
+
+	--contacts-color: #6b5b8a;
+	--contacts-hover: #4b3b6b;
+
+	--footer-color: #666666cc;
+}
+
+/* Override glitch animation and shadows in light mode to be subtle or none */
+body.light-mode header img {
+	filter: none;
+	animation: none;
+	border-color: var(--link-color);
+}
+
+body.light-mode header h1 {
+	text-shadow: none;
+	color: var(--link-color);
+}
+
+body.light-mode header p {
+	color: #555;
+}
+
+body.light-mode main h2 {
+	text-shadow: none;
+	color: var(--link-color);
+}
+
+body.light-mode .blog-post:hover {
+	box-shadow: 0 0 10px #bbb;
+}
+
+body.light-mode .contacts a svg {
+	filter: none;
+}
+
