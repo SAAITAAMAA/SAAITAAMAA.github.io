@@ -1,0 +1,506 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+    --background: oklch(0.98 0.002 264);
+    --foreground: oklch(0.15 0.01 264);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.15 0.01 264);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.15 0.01 264);
+    --primary: oklch(0.2 0.02 264);
+    --primary-foreground: oklch(0.98 0.002 264);
+    --secondary: oklch(0.92 0.005 264);
+    --secondary-foreground: oklch(0.2 0.02 264);
+    --muted: oklch(0.5 0.01 264);
+    --muted-foreground: oklch(0.5 0.01 264);
+    --accent: oklch(0.55 0.15 170);
+    --accent-foreground: oklch(0.98 0.002 264);
+    --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(0.98 0.002 264);
+    --border: oklch(0.3 0.02 264);
+    --input: oklch(0.3 0.02 264);
+    --ring: oklch(0.55 0.15 170);
+    --chart-1: oklch(0.55 0.15 170);
+    --chart-2: oklch(0.6 0.12 200);
+    --chart-3: oklch(0.65 0.14 140);
+    --chart-4: oklch(0.7 0.1 280);
+    --chart-5: oklch(0.6 0.13 320);
+    --radius: 0rem;
+    --vignette: oklch(0.12 0.01 264 / 0.4);
+}
+
+:root.dark {
+    --background: oklch(0.12 0.01 264);
+    --foreground: oklch(0.95 0.005 264);
+    --card: oklch(0.16 0.012 264);
+    --card-foreground: oklch(0.95 0.005 264);
+    --popover: oklch(0.16 0.012 264);
+    --popover-foreground: oklch(0.95 0.005 264);
+    --primary: oklch(0.95 0.005 264);
+    --primary-foreground: oklch(0.12 0.01 264);
+    --secondary: oklch(0.22 0.015 264);
+    --secondary-foreground: oklch(0.95 0.005 264);
+    --muted: oklch(0.45 0.01 264);
+    --muted-foreground: oklch(0.6 0.01 264);
+    --accent: oklch(0.6 0.18 170);
+    --accent-foreground: oklch(0.95 0.005 264);
+    --destructive: oklch(0.5 0.2 27);
+    --destructive-foreground: oklch(0.95 0.005 264);
+    --border: oklch(0.3 0.02 264);
+    --input: oklch(0.3 0.02 264);
+    --ring: oklch(0.6 0.18 170);
+    --chart-1: oklch(0.6 0.18 170);
+    --chart-2: oklch(0.65 0.15 200);
+    --chart-3: oklch(0.7 0.16 140);
+    --chart-4: oklch(0.75 0.12 280);
+    --chart-5: oklch(0.65 0.15 320);
+    --vignette: oklch(0.12 0.01 264 / 0.4);
+}
+
+* {
+    border-color: var(--border);
+    outline-color: var(--ring);
+}
+
+body {
+    font-family: "JetBrains Mono", "Geist Mono", "Courier New", monospace;
+    background-color: var(--background);
+    color: var(--foreground);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    position: relative;
+    background-image: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        oklch(0.55 0.15 170 / 0.03) 2px,
+        oklch(0.55 0.15 170 / 0.03) 4px
+    ),
+    repeating-linear-gradient(
+        90deg,
+        oklch(0.55 0.15 170 / 0.15) 0px,
+        transparent 1px,
+        transparent 40px,
+        oklch(0.55 0.15 170 / 0.15) 41px
+    ),
+    repeating-linear-gradient(
+        180deg,
+        oklch(0.6 0.12 200 / 0.12) 0px,
+        transparent 1px,
+        transparent 40px,
+        oklch(0.6 0.12 200 / 0.12) 41px
+    ),
+    repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 80px,
+        oklch(0.65 0.14 140 / 0.08) 80px,
+        oklch(0.65 0.14 140 / 0.08) 81px
+    );
+    background-size: 100% 100%, 40px 40px, 40px 40px, 113px 113px;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 0%, var(--vignette) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+body > * {
+    position: relative;
+    z-index: 2;
+}
+
+main {
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.py-12 {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+
+.py-16 {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+}
+
+.p-4 {
+    padding: 1rem;
+}
+
+.p-6 {
+    padding: 1.5rem;
+}
+
+.p-8 {
+    padding: 2rem;
+}
+
+.pt-6 {
+    padding-top: 1.5rem;
+}
+
+.pb-12 {
+    padding-bottom: 3rem;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+.mb-6 {
+    margin-bottom: 1.5rem;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.mt-6 {
+    margin-top: 1.5rem;
+}
+
+.mt-8 {
+    margin-top: 2rem;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+.gap-8 {
+    gap: 2rem;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.grid {
+    display: grid;
+}
+
+.grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+    .md\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .md\:py-24 {
+        padding-top: 6rem;
+        padding-bottom: 6rem;
+    }
+
+    .md\:p-6 {
+        padding: 1.5rem;
+    }
+
+    .md\:p-8 {
+        padding: 2rem;
+    }
+
+    .md\:text-3xl {
+        font-size: 1.875rem;
+    }
+
+    .md\:text-base {
+        font-size: 1rem;
+    }
+
+    .md\:text-sm {
+        font-size: 0.875rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .lg\:text-4xl {
+        font-size: 2.25rem;
+    }
+
+    .lg\:text-base {
+        font-size: 1rem;
+    }
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.text-2xl {
+    font-size: 1.5rem;
+}
+
+.text-3xl {
+    font-size: 1.875rem;
+}
+
+.text-4xl {
+    font-size: 2.25rem;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.font-mono {
+    font-family: "JetBrains Mono", "Geist Mono", "Courier New", monospace;
+}
+
+.leading-tight {
+    line-height: 1.25;
+}
+
+.leading-relaxed {
+    line-height: 1.625;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-foreground {
+    color: var(--foreground);
+}
+
+.text-accent {
+    color: var(--accent);
+}
+
+.text-muted-foreground {
+    color: var(--muted-foreground);
+}
+
+.bg-background {
+    background-color: var(--background);
+}
+
+.bg-card {
+    background-color: var(--card);
+}
+
+.bg-accent\/10 {
+    background-color: oklch(0.55 0.15 170 / 0.1);
+}
+
+.border {
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--border);
+}
+
+.border-2 {
+    border-width: 2px;
+}
+
+.border-t {
+    border-top-width: 1px;
+    border-top-style: solid;
+    border-color: var(--border);
+}
+
+.border-b-2 {
+    border-bottom-width: 2px;
+    border-bottom-style: solid;
+    border-color: var(--border);
+}
+
+.border-border {
+    border-color: var(--border);
+}
+
+.hover\:border-accent:hover {
+    border-color: var(--accent);
+}
+
+.max-w-4xl {
+    max-width: 56rem;
+}
+
+.max-w-5xl {
+    max-width: 64rem;
+}
+
+.space-y-4 > * + * {
+    margin-top: 1rem;
+}
+
+.transition-colors {
+    transition-property: color, background-color, border-color;
+    transition-duration: 300ms;
+}
+
+.transition-all {
+    transition-property: all;
+    transition-duration: 300ms;
+}
+
+.hover\:bg-accent\/10:hover {
+    background-color: oklch(0.55 0.15 170 / 0.1);
+}
+
+.hover\:text-foreground:hover {
+    color: var(--foreground);
+}
+
+.hover\:text-accent:hover {
+    color: var(--accent);
+}
+
+.underline {
+    text-decoration: underline;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.absolute {
+    position: absolute;
+}
+
+.relative {
+    position: relative;
+}
+
+.top-4 {
+    top: 1rem;
+}
+
+.left-4 {
+    left: 1rem;
+}
+
+.right-4 {
+    right: 1rem;
+}
+
+.bottom-4 {
+    bottom: 1rem;
+}
+
+.fixed {
+    position: fixed;
+}
+
+.inset-0 {
+    inset: 0;
+}
+
+.neon-text {
+    color: var(--accent);
+    text-shadow: 0 0 10px oklch(0.55 0.15 170 / 0.5),
+                 0 0 20px oklch(0.55 0.15 170 / 0.3),
+                 0 0 30px oklch(0.55 0.15 170 / 0.2);
+}
+
+.neon-cyan {
+    color: oklch(0.6 0.18 170);
+    text-shadow: 0 0 5px oklch(0.6 0.18 170 / 0.5);
+}
+
+.pulse-border {
+    animation: pulse-border 2s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+    0%, 100% {
+        border-color: var(--border);
+    }
+    50% {
+        border-color: var(--accent);
+    }
+}
+
+pre {
+    margin: 0;
+    font-family: inherit;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.group:hover .group-hover\:text-foreground {
+    color: var(--foreground);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .animate-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    position: relative;
+    z-index: 100;
+    background: var(--card);
+    border: 2px solid var(--border);
+    color: var(--muted-foreground);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}

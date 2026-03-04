@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OOB Write in QEMU's Aspeed ADC Emulation | SAAITAAMAA</title>
+    <meta name="description" content="How a wrong keyword became a heap corruption primitive">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .blog-content {
+            max-width: 65ch;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+        .blog-content h2 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            font-size: 1.25rem;
+        }
+        .blog-content h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--foreground);
+            font-size: 1rem;
+        }
+        .blog-content p {
+            margin-bottom: 1rem;
+            color: var(--muted-foreground);
+        }
+        .blog-content ul, .blog-content ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            color: var(--muted-foreground);
+        }
+        .blog-content li {
+            margin-bottom: 0.5rem;
+        }
+        .blog-content code {
+            font-family: "JetBrains Mono", monospace;
+            background-color: var(--secondary);
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+        }
+        .blog-content pre {
+            background-color: var(--secondary);
+            padding: 1rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+        }
+        .blog-content pre code {
+            background: none;
+            padding: 0;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        .blog-content a {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+        .blog-content blockquote {
+            border-left: 3px solid var(--accent);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--muted-foreground);
+            font-style: italic;
+        }
+        .blog-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        .blog-content th, .blog-content td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        .blog-content th {
+            background-color: var(--secondary);
+        }
+        .blog-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .blog-meta {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        .category-badge {
+            display: inline-block;
+            background-color: oklch(0.55 0.15 170 / 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <main class="min-h-screen">
+        <section class="container mx-auto px-4 py-12">
+            <div class="max-w-4xl mx-auto">
+                <!-- Theme Toggle -->
+                <div class="flex justify-center mb-6">
+                    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                        light mode / darkmode
+                    </button>
+                </div>
+
+                <div class="font-mono text-accent mb-6 flex flex-col items-center">
+                    <pre class="text-xs md:text-sm">╔════════════════════════════════════════════════╗</pre>
+                    <pre class="text-xs md:text-sm font-bold">║ BLOG POST ║</pre>
+                    <pre class="text-xs md:text-sm">╚════════════════════════════════════════════════╝</pre>
+                </div>
+
+                <div class="border-2 border-border bg-card p-6 md:p-8">
+                    <div class="blog-header">
+                        <div class="category-badge">Vulnerability Research</div>
+                        <h1 class="font-mono text-xl md:text-2xl font-bold text-foreground mb-2">OOB Write in QEMU's Aspeed ADC Emulation</h1>
+                        <p class="blog-meta">Author: SAAITAAMAA | Date: February 2026</p>
+                    </div>
+
+                    <div class="blog-content">
+                        <h3>How a wrong keyword became a heap corruption primitive</h3>
+
+                        <!-- <p><strong>Author:</strong> Saad Elharaj<br>
+                        <strong>Date:</strong> February 2026<br> 
+                        <strong>Patch:</strong> <a href="https://lore.kernel.org/qemu-devel/20260126141820.719492-1-clg@redhat.com/" target="_blank" rel="noopener noreferrer">lore.kernel.org</a><br>
+                        <strong>Severity:</strong> High (CWE-787 — Out-of-Bounds Write)</p> -->
+
+                        <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+                        <h2>Target Selection</h2>
+
+                        <p>Back in January I decided to kickstart my manual auditing journey with QEMU as my initial target. It checked every box I was looking for: a large complex C codebase, widely deployed in production, a well-understood attack surface (guest-to-host escape), and a long history of prior vulnerabilities to learn from. A good target to start on — and potentially find something real.</p>
+
+                        <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+                        <h2>Methodology — Source-to-Sink Auditing</h2>
+
+                        <p>Before diving deep, a quick explanation of the approach for people less familiar with manual code auditing.</p>
+
+                        <p><strong>Source-to-sink</strong> auditing means you start from untrusted input — the <em>source</em> — and trace how that data flows through the codebase until it reaches a dangerous operation — the <em>sink</em>. In QEMU device emulation, the sources are always guest MMIO reads and writes: any value the guest supplies via a memory-mapped register is completely attacker-controlled.</p>
+
+                        <p>The sinks are operations that become dangerous when fed attacker-controlled data — array indexing, pointer arithmetic, memcpy, function pointers, etc ...</p>
+
+                        <p>The goal is to find paths where untrusted guest data reaches a sink without sufficient validation in between.</p>
+
+                        <p>My initial plan was to go source-to-sink and scorch the earth — maximum code coverage, understand everything. But before investing too much time reading the entire codebase blind, I had a better idea: launch a few basic Semgrep rules first to quickly map out what suspicious sinks look like across the codebase, then prioritise from there.</p>
+
+                        <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+                        <h2>The Accidental Find</h2>
+
+                        <p>A few minutes into going through the Semgrep results, I landed on this <code>memcpy()</code>:</p>
+
+                        <pre><code>/* hw/adc/aspeed_adc.c:260 */
+memcpy(s->regs, aspeed_adc_resets, sizeof(aspeed_adc_resets));</code></pre>
+
+                        <p>I checked it — both arrays are <code>uint32_t[ASPEED_ADC_NR_REGS]</code>, size is a compile-time constant, no user input involved. Not vulnerable. Moving on.</p>
+
+                        <p>But right above it, at line 235, something else caught my eye completely by accident:</p>
+
+                        <pre><code>s->regs[reg] = value;</code></pre>
+
+                        <p>My Sploity-Senses were tingling — <strong>what if <code>reg</code> is attacker-controlled?</strong></p>
+
+                        <p>I traced back through the entire function. It is. Completely. And so is <code>value</code>.</p>
+
+                        <pre><code>static void aspeed_adc_engine_write(void *opaque, hwaddr addr,
+                                    uint64_t value, unsigned int size)
+{
+    AspeedADCEngineState *s = ASPEED_ADC_ENGINE(opaque);
+    int reg = TO_REG(addr);   /* addr >> 2 — derived from guest MMIO offset */
+
+    switch (reg) {
+        case ENGINE_CONTROL:
+            /* ... */ break;
+        /* ... all valid register cases ... */
+        case COMPENSATING_AND_TRIMMING:
+            value &= 0xf; break;
+        default:
+            qemu_log_mask(LOG_UNIMP, "%s: engine[%u]: "
+                          "0x%" HWADDR_PRIx " 0x%" PRIx64 "\n",
+                          __func__, s->engine_id, addr, value);
+            break;   /* &lt;-- the bug: break instead of return */
+    }
+
+    s->regs[reg] = value;   /* reached for ALL cases, including default */
+}</code></pre>
+
+                        <p>The mistake is a single keyword: <code>break</code> instead of <code>return</code> in the <code>default</code> case. Every undefined register offset falls through the switch and still reaches the unconditional write at the bottom. And since <code>value</code> comes directly from the guest MMIO write with no sanitisation in the default path — both what gets written and where it lands are fully attacker-controlled.</p>
+
+                        <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+                        <h2>The Primitive</h2>
+
+                        <p><code>regs[]</code> is declared as:</p>
+
+                        <pre><code>uint32_t regs[ASPEED_ADC_NR_REGS];   /* NR_REGS = 52 */</code></pre>
+
+                        <p>The MMIO window is <code>0x100</code> bytes — 64 possible dword-aligned offsets. The valid register space ends at offset <code>0xC4</code> (index 49). Offsets <code>0xD0</code>–<code>0xFC</code> map to indices <code>52</code>–<code>63</code> — all past the end of the array.</p>
+
+                        <p>What this gives an attacker is a <strong>limited Write-What-Where primitive</strong>:</p>
+
+                        <ul>
+                            <li><strong>What:</strong> 32-bit attacker-controlled value (unmasked in the default path)</li>
+                            <li><strong>Where:</strong> <code>s->regs</code> base + attacker-controlled index</li>
+                        </ul>
+
+                        <p>The "limited" part is that the write is bounded by the MMIO window — you can only reach 12 dwords (48 bytes) past the end of <code>regs[]</code>. You cannot write arbitrarily far. But 48 bytes past this particular array is not a boring neighbourhood.</p>
+
+                        <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+                        <h2>Why It Matters</h2>
+
+                        <p>The <code>AspeedADCEngineState</code> structs for both ADC engines are embedded inline inside the parent <code>AspeedADCState</code> heap object:</p>
+
+                        <pre><code>[ AspeedADCState — heap object ]
+├── AspeedADCEngineState engines[0]
+│   ├── MemoryRegion mmio    ← holds ops function pointer table
+│   ├── ...
+│   └── uint32_t regs[52]   ← OOB write lands here and beyond
+└── AspeedADCEngineState engines[1]
+    ├── MemoryRegion mmio    ← ops pointer potentially reachable
+    └── ...</code></pre>
+
+                        <p>The <code>MemoryRegion</code> struct contains a pointer to <code>MemoryRegionOps</code> — the dispatch table holding the <code>read</code> and <code>write</code> function pointers called on every MMIO access. Depending on compiled struct layout, the 48-byte OOB window from engines[0] reaches into engines[1]'s fields, potentially including that ops pointer.</p>
+
+                        <p>Corrupting it gives you control of the host instruction pointer on the next MMIO access — a possible guest-to-host code execution primitive.</p>
+                        
+                        <p>whether this is truly exploitable or not depends on further analysis.</p>
+
+
+                        <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+                        <h2>The Fix</h2>
+
+                        <p>One keyword change:</p>
+
+                        <pre><code>    default:
+        qemu_log_mask(LOG_UNIMP, "%s: engine[%u]: "
+                      "0x%" HWADDR_PRIx " 0x%" PRIx64 "\n",
+                      __func__, s->engine_id, addr, value);
+        /* Do not update the regs[] array */
+        return;   /* was: break */</code></pre>
+
+                        <p><code>return</code> exits the function before reaching <code>s->regs[reg] = value</code>.<br>
+                        <code>break</code> did not. That's the entire fix.</p>
+
+                        <p>The patch was authored by the Red Hat Team and later fixed upstream.</p>
+
+                        <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+                        <h2>Disclosure Timeline</h2>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Event</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2026-01-14</td>
+                                    <td>Bug found while reviewing Semgrep results in <code>hw/adc/aspeed_adc.c</code></td>
+                                </tr>
+                                <tr>
+                                    <td>2026-01-15</td>
+                                    <td>Reported to QEMU security team</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-01-26</td>
+                                    <td>Patch authored by Red Hat</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-02-10</td>
+                                    <td>Patch merged into QEMU stable branches</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+                        <h2>CVE? Not Quite.</h2>
+
+                        <p>After reporting it, I reached out to the QEMU security team asking whether this would qualify for a CVE. The response from Red Hat was straightforward:</p>
+
+                        <blockquote>
+                            <p>"In many projects this would indeed qualify for assignment of a CVE, but this falls outside the scope of QEMU's security policy "</p>
+            
+                        </blockquote>
+
+                        <p>QEMU's security policy only assigns CVEs for vulnerabilities in code that explicitly provides a security boundary. The Aspeed ADC is emulated-only hardware — not a virtualisation boundary — so it falls outside that scope. 
+                            <br>Although the first vulnerability I found wasn't assigned a CVE — and that was a little discouraging — it's a good start. A good birthday gift to myself. Hopefully many more to come.</p>
+
+                        <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+                        <h2>References</h2>
+
+                        <ul>
+                            <li>Patch: <a href="https://lore.kernel.org/qemu-devel/20260126141820.719492-1-clg@redhat.com/" target="_blank" rel="noopener noreferrer">lore.kernel.org</a></li>
+                            <li>CWE-787: <a href="https://cwe.mitre.org/data/definitions/787.html" target="_blank" rel="noopener noreferrer">Out-of-Bounds Write</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-border">
+                        <a href="../index.html" class="font-mono text-xs text-accent hover:text-foreground transition-colors border border-border px-3 py-1 inline-block hover:bg-accent/10">
+                            [← back to home]
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="container mx-auto px-4 py-12">
+            <div class="max-w-4xl mx-auto">
+                <!-- <div class="flex justify-center gap-4 mb-6 font-mono text-xs md:text-sm">
+                    <a href="../index.html" class="text-accent hover:text-foreground transition-colors">
+                        [home]
+                    </a>
+                </div> -->
+
+                <div class="font-mono text-accent text-center">
+                    <pre class="text-xs md:text-sm">
+╔════════════════════════════════════╗
+║                                    ║
+╚════════════════════════════════════╝</pre>
+                    <p class="text-muted-foreground text-xs mt-4">
+                        © 2026 • 3rd world country, NO RIGHTS RESERVED
+                    </p>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // Theme toggle functionality
+        const toggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        // Check for saved theme preference or use system preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            html.classList.toggle('dark', savedTheme === 'dark');
+        }
+        
+        toggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+    </script>
+</body>
+</html>
